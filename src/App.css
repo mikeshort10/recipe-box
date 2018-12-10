@@ -1,0 +1,41 @@
+.test {
+  background: red;
+}
+
+.flex-column-center {
+  display: flex;
+  flex-direction: column;
+  align-items:center;
+  justify-content:center;
+}
+
+.flex-row-justify {
+  display: flex;
+  align-content: space-around;
+  justify-content: space-around;
+}
+
+.single-row-fill {
+  width:50%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.add-button {
+  width: 100%;
+}
+
+.panel {
+  max-width: 60rem;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items:center;
+  justify-content:center;
+  height: 100vh;
+  width: 100vw;
+}
+
