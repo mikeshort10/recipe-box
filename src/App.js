@@ -83,11 +83,12 @@ const store = createStore(recipeReducer)
 
 function Ingredient(props) {
   let ing = props.ingredient;
+  let measurement = ing.measurement === "Other..." ? ing.other : ing.measurement;
   return (
     <ListGroupItem>
       {ing.amount +
         " " +
-        ing.measurement +
+        measurement +
         " of " +
         ing.name}
     </ListGroupItem>
@@ -129,6 +130,7 @@ class Recipe extends Component {
 }
 
 function IngredientEdit(props) {
+  console.log(props.ingredient);
   return (
     <Form inline>
     <FormGroup validationState={props.error && props.ingredient.amount <= 0 ? "error" : null}>
@@ -147,7 +149,11 @@ function IngredientEdit(props) {
         <option name="tbsp">tbsp</option>
         <option name="tsp">tsp</option>
         <option name="oz">oz</option>
+        <option name="other">Other...</option>
       </select>
+      </FormGroup>
+      <FormGroup validationState={props.error && !props.ingredient.name ? "error" : null}>
+        <FormControl type="text" name={props.number + "other"} className={props.ingredient.display ? "text-center" : "hidden"} onChange={props.editRecipe} value={props.ingredient.measurement === "Other..." ? props.ingredient.other : ""}/>
       </FormGroup>
       <FormGroup validationState={props.error && !props.ingredient.name ? "error" : null}>
       <FormControl
@@ -202,14 +208,12 @@ class RecipeEdit extends Component {
           </FormGroup>
         </InputGroup>
         </Form>
-        <Panel>
-          <Panel.Body>
-            {this.editAllIngredients()}
-            <Button bsStyle="success" onClick={this.props.addIngredient} vertical="true" block>
-              Add Ingredient
-            </Button>
-          </Panel.Body>
-        </Panel>
+        <Panel.Body>
+          {this.editAllIngredients()}
+          <Button bsStyle="success" onClick={this.props.addIngredient} vertical="true" block>
+            Add Ingredient
+          </Button>
+        </Panel.Body>
         <Panel.Footer>
           <ButtonGroup className="flex-row-justify">
             <ButtonGroup className="single-row-fill">
@@ -309,10 +313,20 @@ class Presentational extends Component {
     let t = window.event.target;
     let n = t.getAttribute("name");
     let editableRecipe = Object.assign({}, this.state.editableRecipe);
+    console.log('x',t.value, n)
     if (n === "name") editableRecipe.name = t.value;
     else {
       editableRecipe.ingredients[n[0]][n.slice(1)] = t.value;
+      if (n.slice(1) === "measurement"){
+        if (t.value === "Other..." ) {
+          editableRecipe.ingredients[n[0]].display = true;
+        } else {
+          console.log('false')
+          editableRecipe.ingredients[n[0]].display = false;
+        }
+      }
     }
+    console.log('er', editableRecipe)
     this.setState({
       editableRecipe: editableRecipe
     });

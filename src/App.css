@@ -27,7 +27,15 @@
 }
 
 .panel {
-  max-width: 60rem;
+  max-width: 70rem;
+}
+
+.input-display {
+  display: inline-block;
+}
+
+.input-display {
+  display: none;
 }
 
 body {
