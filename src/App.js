@@ -41,7 +41,7 @@ const deleteRecipe = (index) => {
   }
 }
 
-const requestingData = () => {
+/*const requestingData = () => {
   return {
     type: REQUESTING_DATA
   }
@@ -52,11 +52,11 @@ const receivedData = (data) => {
     type: RECEIVED_DATA,
     recipes: data.recipes
   }
-}
+}*/
 
-console.log(window.localStorage)
+console.log(localStorage)
 
-const recipeReducer = (state = JSON.parse(window.localStorage.getItem('recipes')) || { recipes : [] }, action) => {
+const recipeReducer = (state = JSON.parse(localStorage.getItem('recipes')) || { recipes : [] }, action) => {
   let recipes = [...state.recipes]
   switch (action.type) {
     case REQUESTING_DATA:
@@ -65,11 +65,13 @@ const recipeReducer = (state = JSON.parse(window.localStorage.getItem('recipes')
       return action.recipes;
     case EDIT:
       recipes.splice(action.index, 1, action.recipe)
-      window.localStorage.setItem('recipes', JSON.stringify({ recipes : recipes }))
+      localStorage.setItem('recipes', JSON.stringify({ recipes : recipes }))
+      localStorage.getItem('recipes')
       return {recipes: recipes};
     case DELETE:
       recipes.splice(action.index, 1)
-      window.localStorage.setItem('recipes', JSON.stringify({ recipes : recipes }))
+      localStorage.setItem('recipes', JSON.stringify({ recipes : recipes }))
+      localStorage.getItem('recipes')
       return {recipes: recipes};
     default:
       return state;
@@ -85,7 +87,7 @@ function Ingredient(props) {
   let ing = props.ingredient;
   let measurement = ing.measurement === "Other..." ? ing.other : ing.measurement;
   return (
-    <ListGroupItem>
+    <ListGroupItem className="float-right">
       {ing.amount +
         " " +
         measurement +
@@ -93,6 +95,14 @@ function Ingredient(props) {
         ing.name}
     </ListGroupItem>
   );
+}
+
+function Direction(props) {
+  return (
+      <ListGroupItem>
+        {props.number + ") " + props.direction}
+      </ListGroupItem>
+    )
 }
 
 class Recipe extends Component {
@@ -105,15 +115,27 @@ class Recipe extends Component {
     return arr;
   }
 
+  directions () {
+    let arr = [];
+    let dir = this.props.recipe.directions;
+    for (let i = 0; i < dir.length; i++) {
+      arr.push(<Direction direction={dir[i]} key={i} number={i + 1}/>)
+    }
+    return arr;
+  }
+
   render() {
       return (
       <Panel eventKey={this.props.eventKey}>
         <Panel.Heading className="text-center">
          <Panel.Title toggle>{this.props.recipe.name}</Panel.Title>
         </Panel.Heading>
-         <Panel.Body collapsible>
+         <Panel.Body className="recipe" collapsible>
             <ListGroup>
               {this.ingredients()}
+            </ListGroup>
+            <ListGroup>
+              {this.directions()}
             </ListGroup>
             <Button
               vertical="true"
@@ -155,6 +177,7 @@ function IngredientEdit(props) {
       <FormGroup validationState={props.error && !props.ingredient.name ? "error" : null}>
         <FormControl type="text" name={props.number + "other"} className={props.ingredient.display ? "text-center" : "hidden"} onChange={props.editRecipe} value={props.ingredient.measurement === "Other..." ? props.ingredient.other : ""}/>
       </FormGroup>
+      <InputGroup>
       <FormGroup validationState={props.error && !props.ingredient.name ? "error" : null}>
       <FormControl
         className="text-center"
@@ -163,14 +186,33 @@ function IngredientEdit(props) {
         name={props.number + "name"}
         onChange={props.editRecipe}
       />
+      <InputGroup.Button>
+        <Button bsStyle="danger" onClick={props.delete}>
+          <i className="fa fa-trash" />
+        </Button>
+      </InputGroup.Button>
       </FormGroup>
-      <FormGroup>
-      <Button bsStyle="danger" onClick={props.deleteIngredient}>
-        <i className="fa fa-trash" />
-      </Button>
-      </FormGroup>
+      </InputGroup>
   </Form>
   );
+}
+
+function DirectionEdit (props) {
+  return (
+    <Form>
+    <FormGroup>
+      <InputGroup>
+        <InputGroup.Addon>{props.number + 1}</InputGroup.Addon>
+        <FormControl name={props.number + "direction"} className="inline-form text-center" onChange={props.editRecipe} value={props.direction}/>
+        <InputGroup.Button>
+          <Button bsStyle="danger" onClick={props.delete}>
+            <i className="fa fa-trash"/>
+          </Button>
+        </InputGroup.Button>
+      </InputGroup>
+      </FormGroup>
+    </Form>
+    );
 }
 
 class RecipeEdit extends Component {
@@ -181,13 +223,29 @@ class RecipeEdit extends Component {
         <IngredientEdit
           ingredient={this.props.recipe.ingredients[i]}
           key={i}
-          changeName={() => this.props.changeName(i)}
           number={i}
-          editRecipe={() => this.props.editRecipe()}
-          deleteIngredient={() => this.props.deleteIngredient(i)}
+          editRecipe={this.props.editRecipe}
+          delete={(prop, num) => this.props.delete('ingredients', i)}
           error = {this.props.error}
         />
       );
+    }
+    return arr;
+  }
+
+  editAllDirections() {
+    let arr = [];
+    for (let i = 0; i < this.props.recipe.directions.length; i++) {
+      arr.push(
+        <DirectionEdit
+          direction={this.props.recipe.directions[i]}
+          key={i}
+          number={i}
+          editRecipe={this.props.editRecipe}
+          delete={() => this.props.delete('directions', i)}
+          error = {this.props.error}
+          />
+        )
     }
     return arr;
   }
@@ -203,26 +261,34 @@ class RecipeEdit extends Component {
             className="text-center"
             value={this.props.recipe.name}
             name="name"
-            onChange={() => this.props.editRecipe()}
+            onChange={this.props.editRecipe}
           />
           </FormGroup>
         </InputGroup>
         </Form>
         <Panel.Body>
-          {this.editAllIngredients()}
+          <h3 className="text-center">Ingredients</h3>
+            {this.editAllIngredients()}
           <Button bsStyle="success" onClick={this.props.addIngredient} vertical="true" block>
-            Add Ingredient
+          Add Ingredient
+          </Button>
+        </Panel.Body>
+        <Panel.Body>
+          <h3 className="text-center">Directions</h3>
+            {this.editAllDirections()}
+          <Button bsStyle="success" onClick={this.props.addStep} vertical="true" block>
+          Add Step
           </Button>
         </Panel.Body>
         <Panel.Footer>
           <ButtonGroup className="flex-row-justify">
             <ButtonGroup className="single-row-fill">
-              <Button bsStyle="danger" onClick={() => this.props.deleteRecipe()}>
+              <Button bsStyle="danger" onClick={this.props.deleteRecipe}>
                 Delete
               </Button>
             </ButtonGroup>
             <ButtonGroup className="single-row-fill">
-              <Button bsStyle="success" onClick={() => this.props.saveRecipe()}>
+              <Button bsStyle="success" onClick={this.props.saveRecipe}>
                 Save
               </Button>
             </ButtonGroup>
@@ -242,6 +308,7 @@ class Presentational extends Component {
     };
     this.editRecipe = this.editRecipe.bind(this);
     this.addIngredient = this.addIngredient.bind(this);
+    this.addStep = this.addStep.bind(this);
   }
 
   viewAllRecipes() {
@@ -271,9 +338,10 @@ class Presentational extends Component {
           amount: "",
           measurement: ""
         }
-      ]
+      ],
+      directions: []
     };
-    if (num == this.props.recipes.length) recipes.push(newRecipe);
+    if (num === this.props.recipes.length) recipes.push(newRecipe);
     else newRecipe = this.props.recipes[num];
     this.setState({
       editableRecipe: newRecipe,
@@ -298,6 +366,7 @@ class Presentational extends Component {
         error: error
       })
     } else {
+    console.log(editableRecipe)
     this.props.addNewRecipe(editableRecipe, num);
     this.setState({
       error: error,
@@ -313,9 +382,12 @@ class Presentational extends Component {
     let t = window.event.target;
     let n = t.getAttribute("name");
     let editableRecipe = Object.assign({}, this.state.editableRecipe);
-    console.log('x',t.value, n)
     if (n === "name") editableRecipe.name = t.value;
-    else {
+    else if (n.slice(1) === "direction") {
+      let directions = [...editableRecipe.directions]
+      directions.splice(n[0], 1, t.value);
+      editableRecipe.directions = directions;
+    } else {
       editableRecipe.ingredients[n[0]][n.slice(1)] = t.value;
       if (n.slice(1) === "measurement"){
         if (t.value === "Other..." ) {
@@ -326,7 +398,7 @@ class Presentational extends Component {
         }
       }
     }
-    console.log('er', editableRecipe)
+    console.log('updated', editableRecipe)
     this.setState({
       editableRecipe: editableRecipe
     });
@@ -352,9 +424,18 @@ class Presentational extends Component {
     });
   }
 
-  deleteIngredient(num) {
+  addStep() {
     let editableRecipe = Object.assign({}, this.state.editableRecipe);
-    editableRecipe.ingredients.splice(num, 1);
+    editableRecipe.directions.push("");
+    this.setState({
+      editableRecipe: editableRecipe
+    })
+  }
+
+  delete (key, num) {
+    console.log('clicked');
+    let editableRecipe = Object.assign({}, this.state.editableRecipe);
+    editableRecipe[key].splice(num, 1);
     this.setState({
       editableRecipe: editableRecipe
     });
@@ -373,7 +454,8 @@ class Presentational extends Component {
             measurement: 'tsp',
             amount: 1
           }
-          ]
+          ],
+          directions: []
       }
     }
     this.setState({
@@ -408,8 +490,9 @@ class Presentational extends Component {
           saveRecipe={() => this.saveRecipe(this.state.selectedRecipe)}
           deleteRecipe={() => this.deleteRecipe(this.state.selectedRecipe)}
           editRecipe={() => this.editRecipe()}
-          deleteIngredient={num => this.deleteIngredient(num)}
+          delete={(key, num) => this.delete(key, num)}
           addIngredient={this.addIngredient}
+          addStep={this.addStep}
           error = {this.state.error}
         />
       );
