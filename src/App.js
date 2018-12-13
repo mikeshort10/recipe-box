@@ -11,7 +11,9 @@ import {
   Form,
   ButtonGroup,
   PanelGroup,
-  FormGroup
+  FormGroup,
+  DropdownButton,
+  MenuItem
 } from 'react-bootstrap';
 import { createStore } from 'redux';
 import { Provider, connect } from 'react-redux';
@@ -163,6 +165,7 @@ function IngredientEdit(props) {
         value={props.ingredient.amount}
         name={props.number + "amount"}
         onChange={props.editRecipe}
+        placeholder="#"
       />
       </FormGroup>
       <FormGroup>
@@ -175,7 +178,7 @@ function IngredientEdit(props) {
       </select>
       </FormGroup>
       <FormGroup validationState={props.error && !props.ingredient.name ? "error" : null}>
-        <FormControl type="text" name={props.number + "other"} className={props.ingredient.display ? "text-center" : "hidden"} onChange={props.editRecipe} value={props.ingredient.measurement === "Other..." ? props.ingredient.other : ""}/>
+        <FormControl type="text" name={props.number + "other"} className={props.ingredient.display ? "text-center" : "hidden"} onChange={props.editRecipe} value={props.ingredient.measurement === "Other..." ? props.ingredient.other : ""} placeholder="slices, cloves, etc."/>
       </FormGroup>
       <InputGroup>
       <FormGroup validationState={props.error && !props.ingredient.name ? "error" : null}>
@@ -185,6 +188,7 @@ function IngredientEdit(props) {
         value={props.ingredient.name}
         name={props.number + "name"}
         onChange={props.editRecipe}
+        placeholder="e.g. milk, butter, oil"
       />
       <InputGroup.Button>
         <Button bsStyle="danger" onClick={props.delete}>
@@ -203,7 +207,7 @@ function DirectionEdit (props) {
     <FormGroup>
       <InputGroup>
         <InputGroup.Addon>{props.number + 1}</InputGroup.Addon>
-        <FormControl name={props.number + "direction"} className="inline-form text-center" onChange={props.editRecipe} value={props.direction}/>
+        <FormControl name={props.number + "direction"} className="inline-form text-center" onChange={props.editRecipe} value={props.direction} placeholder="e.g. Preheat oven, boil water, etc."/>
         <InputGroup.Button>
           <Button bsStyle="danger" onClick={props.delete}>
             <i className="fa fa-trash"/>
